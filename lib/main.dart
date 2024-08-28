@@ -41,6 +41,7 @@ class _MainAppState extends State<MainApp> {
             socket.add('Echo: $message'); // 클라이언트에게 응답
           }
         }, onDone: () {
+          // ping interval이 만료되면 클라이언트와 연결이 끊어집니다.
           print('Client disconnected!');
         }, onError: (error) {
           print('Error: $error');
