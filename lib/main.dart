@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -14,6 +15,8 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
+  final int pingIntervalSeconds = 10; // ping 간격
+
   Future<void> _startWebSocketServer() async {
     // Start the WebSocket server
     // WebSocket 서버 포트를 설정합니다.
@@ -26,17 +29,23 @@ class _MainAppState extends State<MainApp> {
         var socket = await WebSocketTransformer.upgrade(request);
         print('Client connected!');
 
+        // Ping interval을 설정하여 주기적으로 ping을 보냄
+        socket.pingInterval = Duration(seconds: pingIntervalSeconds);
+
         // 메시지를 받으면 클라이언트로 다시 전송합니다.
         socket.listen((message) {
           print('Received message: $message');
-          socket.add('Echo: $message'); // 클라이언트에게 응답
+          if (message == 'pong') {
+            print('Received pong from client');
+          } else {
+            socket.add('Echo: $message'); // 클라이언트에게 응답
+          }
         }, onDone: () {
           print('Client disconnected!');
         }, onError: (error) {
           print('Error: $error');
         });
       } else {
-        // WebSocket 요청이 아니면 404 에러를 반환합니다.
         request.response.statusCode = HttpStatus.notFound;
         request.response.close();
       }
